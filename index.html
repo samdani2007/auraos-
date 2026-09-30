@@ -1,0 +1,366 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AuraOS</title>
+
+  <!-- AuraOS Stylesheet Suite -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/boot.css">
+  <link rel="stylesheet" href="css/menubar.css">
+  <link rel="stylesheet" href="css/dock.css">
+  <link rel="stylesheet" href="css/window.css">
+  <link rel="stylesheet" href="css/system-overlays.css">
+  <link rel="stylesheet" href="css/apps.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. Boot Screen
+       ======================================================================== -->
+  <div id="boot-screen">
+    <div class="boot-aura-glow"></div>
+    <div class="boot-content">
+      <div class="aura-logo-badge">
+        <svg class="aura-orb-rings" viewBox="0 0 64 64" fill="none">
+          <defs>
+            <radialGradient id="bCore" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="35%" stop-color="#00f2fe"/>
+              <stop offset="85%" stop-color="#7f00ff"/>
+              <stop offset="100%" stop-color="#080a14" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="bRing" x1="0" y1="0" x2="64" y2="64">
+              <stop offset="0%" stop-color="#00f2fe"/>
+              <stop offset="50%" stop-color="#9d4edd"/>
+              <stop offset="100%" stop-color="#ff6b6b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="32" cy="32" r="16" fill="url(#bCore)"/>
+          <circle cx="32" cy="32" r="6" fill="#ffffff"/>
+          <ellipse cx="32" cy="32" rx="25" ry="12" stroke="url(#bRing)" stroke-width="2.5" transform="rotate(-30 32 32)"/>
+          <ellipse cx="32" cy="32" rx="28" ry="14" stroke="url(#bRing)" stroke-width="2" transform="rotate(45 32 32)" stroke-dasharray="8 4"/>
+        </svg>
+      </div>
+      <div class="boot-title">AuraOS</div>
+      <div class="boot-progress-container">
+        <div class="boot-progress-bar" id="boot-progress-bar"></div>
+      </div>
+      <div class="boot-status-text" id="boot-status-text">Booting Aura Micro-Kernel...</div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       2. Login Screen
+       ======================================================================== -->
+  <div id="login-screen" style="display:none;">
+    <div class="boot-aura-glow"></div>
+    <div class="login-card">
+      <div class="login-avatar-wrap">
+        <div class="login-avatar" id="login-avatar-display">✨</div>
+      </div>
+      <div class="login-user-name" id="login-user-name">Aura Explorer</div>
+      <form class="login-form" id="login-form">
+        <div class="login-input-wrap">
+          <input type="password" class="login-input" id="login-password" placeholder="Enter password" autofocus />
+          <button type="submit" class="login-submit-btn" id="login-submit-btn" title="Unlock Desktop">→</button>
+        </div>
+      </form>
+      <div class="login-hint">Accepts any password or press Enter to unlock</div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       3. Master Desktop Shell
+       ======================================================================== -->
+  <div id="desktop-root">
+
+    <!-- Dynamic Wallpaper & Ambient Core Layers -->
+    <div id="wallpaper-layer">
+      <canvas id="wallpaper-canvas"></canvas>
+    </div>
+    <div id="ambient-aura-layer"></div>
+
+    <!-- Desktop Icons Surface -->
+    <div id="desktop-surface"></div>
+
+    <!-- Window Manager Layer -->
+    <div id="windows-container"></div>
+
+    <!-- Window Snapping Guide -->
+    <div id="snap-preview"></div>
+
+    <!-- Top Menu Bar -->
+    <header id="menu-bar">
+      <div class="menubar-left">
+        <div class="menubar-item menubar-logo-btn" id="menubar-logo-item">
+          <div class="menubar-logo-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="14" fill="#00f2fe" opacity="0.8"/>
+              <ellipse cx="32" cy="32" rx="22" ry="10" stroke="#fff" stroke-width="3" transform="rotate(-30 32 32)"/>
+            </svg>
+          </div>
+          <div class="menubar-dropdown" id="menubar-logo-dropdown">
+            <div class="dropdown-item" data-action="about"><span>About AuraOS</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="settings"><span>System Settings...</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="sleep"><span>Sleep</span></div>
+            <div class="dropdown-item" data-action="restart"><span>Restart...</span></div>
+            <div class="dropdown-item" data-action="shutdown"><span>Shut Down...</span></div>
+          </div>
+        </div>
+        <div class="menubar-item menubar-app-title" id="menubar-app-title">AuraOS</div>
+        <div id="menubar-app-menus" style="display:flex;"></div>
+      </div>
+
+      <div class="menubar-right">
+        <!-- Ambient Aura Radiance Dot -->
+        <div class="menubar-status-item" id="menubar-aura-dot-btn" title="Aura Ambient Core Status">
+          <div class="menubar-aura-dot" id="menubar-aura-dot"></div>
+        </div>
+
+        <!-- Wi-Fi -->
+        <div class="menubar-status-item" title="Wi-Fi: Connected to Aura-Mesh">
+          <div class="menubar-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+          </div>
+        </div>
+
+        <!-- Battery -->
+        <div class="menubar-status-item" title="Battery: 100% (Power Adapter Connected)">
+          <div class="menubar-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="6" width="18" height="12" rx="2"></rect><line x1="23" y1="11" x2="23" y2="13"></line><rect x="3" y="8" width="12" height="8" rx="1" fill="currentColor"></rect></svg>
+          </div>
+        </div>
+
+        <!-- Volume -->
+        <div class="menubar-status-item" title="Volume">
+          <div class="menubar-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          </div>
+        </div>
+
+        <!-- Control Center Toggle -->
+        <div class="menubar-status-item" id="menubar-cc-btn" title="Control Center">
+          <div class="menubar-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg>
+          </div>
+        </div>
+
+        <!-- Live Clock -->
+        <div class="menubar-status-item menubar-clock" id="menubar-clock-btn">
+          <span id="menubar-clock">Wed Sep 30 7:26 PM</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Bottom Dock -->
+    <div id="dock-container" data-position="bottom">
+      <div id="dock"></div>
+    </div>
+
+    <!-- Spotlight Search Overlay -->
+    <div id="spotlight-overlay">
+      <div class="spotlight-modal">
+        <div class="spotlight-input-row">
+          <div class="spotlight-search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <input type="text" class="spotlight-input" id="spotlight-input" placeholder="Spotlight Search" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="spotlight-results" id="spotlight-results"></div>
+      </div>
+    </div>
+
+    <!-- Launchpad Overlay -->
+    <div id="launchpad-overlay">
+      <div class="launchpad-search-wrap">
+        <div class="launchpad-search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <input type="text" class="launchpad-search-input" id="launchpad-search" placeholder="Search Apps" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="launchpad-grid" id="launchpad-grid"></div>
+    </div>
+
+    <!-- Mission Control Expose Overlay -->
+    <div id="mission-control-overlay">
+      <div class="mission-control-title">Mission Control</div>
+      <div class="mission-control-grid"></div>
+    </div>
+
+    <!-- Control Center Flyout -->
+    <div id="control-center">
+      <div class="control-toggle-grid">
+        <div class="control-toggle-btn active" id="cc-toggle-wifi">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Wi-Fi</span>
+            <span class="toggle-state">Aura-Mesh</span>
+          </div>
+        </div>
+
+        <div class="control-toggle-btn active" id="cc-toggle-bt">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Bluetooth</span>
+            <span class="toggle-state">On</span>
+          </div>
+        </div>
+
+        <div class="control-toggle-btn" id="cc-toggle-focus">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M3 12h3M18 12h3M12 3v3M12 18v3"></path></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Focus</span>
+            <span class="toggle-state">Off</span>
+          </div>
+        </div>
+
+        <div class="control-toggle-btn active" id="cc-toggle-theme">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Theme</span>
+            <span class="toggle-state">Dark</span>
+          </div>
+        </div>
+
+        <div class="control-toggle-btn active" id="cc-toggle-aura">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Aura Glow</span>
+            <span class="toggle-state">Active</span>
+          </div>
+        </div>
+
+        <div class="control-toggle-btn" id="cc-toggle-ambient-sound">
+          <div class="toggle-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+          </div>
+          <div class="toggle-label-wrap">
+            <span class="toggle-name">Aura Sound</span>
+            <span class="toggle-state">Off</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Display Brightness Slider -->
+      <div class="control-slider-card">
+        <div class="slider-label-row">
+          <span>Display Brightness</span>
+          <span>☀️</span>
+        </div>
+        <input type="range" class="control-slider" id="cc-brightness-slider" min="0.3" max="1.0" step="0.05" value="1.0" />
+      </div>
+
+      <!-- Master Volume Slider -->
+      <div class="control-slider-card">
+        <div class="slider-label-row">
+          <span>Master Volume</span>
+          <span>🔊</span>
+        </div>
+        <input type="range" class="control-slider" id="cc-volume-slider" min="0" max="1.0" step="0.05" value="0.8" />
+      </div>
+    </div>
+
+    <!-- Notification Center Drawer -->
+    <div id="notification-center">
+      <div class="nc-header">
+        <span class="nc-title">Notifications</span>
+        <button class="nc-clear-btn" id="nc-clear-btn">Clear All</button>
+      </div>
+      <div class="nc-list" id="nc-list"></div>
+    </div>
+
+    <!-- Live Toast Stack Container -->
+    <div id="toast-container"></div>
+
+    <!-- Desktop Context Menu -->
+    <div id="context-menu">
+      <div class="ctx-item" data-action="new-folder">
+        <span>+ New Folder</span>
+      </div>
+      <div class="ctx-divider"></div>
+      <div class="ctx-item" data-action="change-wallpaper">
+        <span>Change Wallpaper...</span>
+      </div>
+      <div class="ctx-item" data-action="clean-desktop">
+        <span>Clean Up Desktop</span>
+      </div>
+      <div class="ctx-divider"></div>
+      <div class="ctx-item" data-action="open-shell">
+        <span>Open Shell Here</span>
+      </div>
+      <div class="ctx-item" data-action="mission-control">
+        <span>Show Mission Control</span>
+      </div>
+    </div>
+
+    <!-- Mobile Responsive Friendly Notice -->
+    <div id="mobile-notice">
+      <div class="mobile-notice-card">
+        <div style="width:54px; height:54px;">
+          <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="16" fill="#00f2fe"/><ellipse cx="32" cy="32" rx="24" ry="10" stroke="#fff" stroke-width="3" transform="rotate(-30 32 32)"/></svg>
+        </div>
+        <h2 style="font-size:20px; font-weight:700;">Desktop Experience</h2>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">
+          AuraOS is optimized for desktop and tablet screens to deliver a fluid multi-window multitasking experience.
+        </p>
+        <button class="btn-proceed" id="btn-dismiss-mobile">Enter AuraOS Anyway</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AuraOS Core Scripts -->
+  <script src="js/core/events.js"></script>
+  <script src="js/core/state.js"></script>
+  <script src="js/core/audio.js"></script>
+  <script src="js/core/icons.js"></script>
+  <script src="js/core/fs.js"></script>
+
+  <!-- Applications Suite -->
+  <script src="js/apps/app-registry.js"></script>
+  <script src="js/apps/explorer.js"></script>
+  <script src="js/apps/shell.js"></script>
+  <script src="js/apps/notes.js"></script>
+  <script src="js/apps/calculator.js"></script>
+  <script src="js/apps/orbit.js"></script>
+  <script src="js/apps/music.js"></script>
+  <script src="js/apps/photos.js"></script>
+  <script src="js/apps/settings.js"></script>
+  <script src="js/apps/calendar.js"></script>
+  <script src="js/apps/weather.js"></script>
+  <script src="js/apps/editor.js"></script>
+  <script src="js/apps/games.js"></script>
+  <script src="js/apps/appstore.js"></script>
+
+  <!-- Shell Subsystems -->
+  <script src="js/shell/wallpaper.js"></script>
+  <script src="js/shell/boot.js"></script>
+  <script src="js/shell/menubar.js"></script>
+  <script src="js/shell/dock.js"></script>
+  <script src="js/shell/wm.js"></script>
+  <script src="js/shell/spotlight.js"></script>
+  <script src="js/shell/launchpad.js"></script>
+  <script src="js/shell/control-center.js"></script>
+  <script src="js/shell/notifications.js"></script>
+  <script src="js/shell/context-menu.js"></script>
+  <script src="js/shell/shortcuts.js"></script>
+
+  <!-- Master Bootstrap -->
+  <script src="js/main.js"></script>
+</body>
+</html>
